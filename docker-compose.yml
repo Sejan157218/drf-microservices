@@ -1,0 +1,65 @@
+version: '3.9'
+
+services:
+  authentication_app:
+    build: ./authentication
+    command: bash -c "python3 ./authentication/manage.py makemigrations && python3 ./authentication/manage.py migrate && python3 ./authentication/manage.py runserver 0.0.0.0:8001"
+    volumes:
+      - .:/app
+    # ports:
+    #   - "8001:8001"
+    expose:
+      - 8001
+    restart: always
+    # depends_on:
+    #   - mongodb
+    # links:
+    #   - mongodb
+
+  product_app:
+    build: ./product
+    command: bash -c "python3 ./product/manage.py makemigrations && python3 ./product/manage.py migrate && python3 ./product/manage.py runserver 0.0.0.0:8002"
+    volumes:
+      - .:/app
+    # ports:
+    #   - "8002:8002"
+    expose:
+      - 8002
+    restart: always
+    # depends_on:
+    #   - mongodb
+    # links:
+    #   - mongodb
+
+  # vote_app:
+  #   build: ./vote
+  #   command: bash -c "python3 ./vote/manage.py makemigrations && python3 ./vote/manage.py migrate && python3 ./vote/manage.py runserver 0.0.0.0:8003"
+  #   volumes:
+  #     - .:/app
+  #   ports:
+  #     - "8003:8003"
+  #   restart: always
+  #   depends_on:
+  #     - mongodb
+  #   links:
+  #     - mongodb
+
+  # mongodb:
+  #   restart: always
+  #   image: mongo:3.4.7
+  #   ports:
+  #     - "27017:27017"
+  #   command: mongodb
+
+  nginx:
+    build: ./conf
+    ports:
+      - 80:80
+    volumes:
+      - /path/to/static/files:/app/authentication/static
+    links:
+      - authentication_app
+      - product_app
+    depends_on:
+      - authentication_app
+      - product_app
